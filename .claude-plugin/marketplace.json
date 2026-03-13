@@ -757,6 +757,17 @@
         "sha": "c2d8009ff75f76bce1ec4cf79c2467b50d81725e"
       },
       "homepage": "https://github.com/ChromeDevTools/chrome-devtools-mcp"
+    },
+    {
+      "name": "planetscale",
+      "description": "An authenticated hosted MCP server that accesses your PlanetScale organizations, databases, branches, schema, and Insights data. Query against your data, surface slow queries, and get organizational and account information.",
+      "category": "database",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/planetscale/claude-plugin.git",
+        "sha": "f1066cac5bb956bbbb05918f5b07fe0e873d44ea"
+      },
+      "homepage": "https://planetscale.com/"
     }
   ]
 }
