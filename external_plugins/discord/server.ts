@@ -550,12 +550,19 @@ mcp.setNotificationHandler(
     const { request_id, tool_name, description, input_preview } = params
     pendingPermissions.set(request_id, { tool_name, description, input_preview })
     const access = loadAccess()
-    const text = `🔐 Permission: ${tool_name}`
+    let prettyInput: string
+    try {
+      prettyInput = JSON.stringify(JSON.parse(input_preview), null, 2)
+    } catch {
+      prettyInput = input_preview
+    }
+    // Show full context upfront — truncate if over Discord's 2000 char limit.
+    const detail =
+      `🔐 **Permission: ${tool_name}**\n\n` +
+      `${description}\n\n` +
+      `\`\`\`json\n${prettyInput}\n\`\`\``
+    const text = detail.length > 1900 ? detail.slice(0, 1897) + '…```' : detail
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`perm:more:${request_id}`)
-        .setLabel('See more')
-        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`perm:allow:${request_id}`)
         .setLabel('Allow')
