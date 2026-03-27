@@ -1,51 +1,22 @@
-# Claude Code Plugins Directory
+# claude-discord-threads-plugin
 
-A curated directory of high-quality plugins for Claude Code.
+A Claude Code plugin marketplace with a Discord plugin that adds per-session thread routing for multi-session setups.
 
-> **⚠️ Important:** Make sure you trust a plugin before installing, updating, or using it. Anthropic does not control what MCP servers, files, or other software are included in plugins and cannot verify that they will work as intended or that they won't change. See each plugin's homepage for more information.
+## Plugins
 
-## Structure
-
-- **`/plugins`** - Internal plugins developed and maintained by Anthropic
-- **`/external_plugins`** - Third-party plugins from partners and the community
+- **discord-threads** — Discord messaging bridge with session-isolated threads. When multiple Claude Code sessions run simultaneously, each session gets its own Discord thread so messages route to the correct session.
 
 ## Installation
 
-Plugins can be installed directly from this marketplace via Claude Code's plugin system.
-
-To install, run `/plugin install {plugin-name}@claude-plugins-official`
-
-or browse for the plugin in `/plugin > Discover`
-
-## Contributing
-
-### Internal Plugins
-
-Internal plugins are developed by Anthropic team members. See `/plugins/example-plugin` for a reference implementation.
-
-### External Plugins
-
-Third-party partners can submit plugins for inclusion in the marketplace. External plugins must meet quality and security standards for approval. To submit a new plugin, use the [plugin directory submission form](https://clau.de/plugin-directory-submission).
-
-## Plugin Structure
-
-Each plugin follows a standard structure:
-
 ```
-plugin-name/
-├── .claude-plugin/
-│   └── plugin.json      # Plugin metadata (required)
-├── .mcp.json            # MCP server configuration (optional)
-├── commands/            # Slash commands (optional)
-├── agents/              # Agent definitions (optional)
-├── skills/              # Skill definitions (optional)
-└── README.md            # Documentation
+/plugin marketplace add dmitry-imed/claude-discord-threads-plugin
+/plugin install discord-threads@dmitry-plugins
 ```
 
-## License
+Then launch Claude Code with the channel:
 
-Please see each linked plugin for the relevant LICENSE file.
+```sh
+claude --channels plugin:discord-threads@dmitry-plugins
+```
 
-## Documentation
-
-For more information on developing Claude Code plugins, see the [official documentation](https://code.claude.com/docs/en/plugins).
+See [plugins/discord-threads/README.md](plugins/discord-threads/README.md) for full setup instructions.
