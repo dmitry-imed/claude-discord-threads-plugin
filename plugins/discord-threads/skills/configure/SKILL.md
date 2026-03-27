@@ -124,7 +124,7 @@ Delete the `DISCORD_BOT_TOKEN=` line (or the file if that's the only line).
 - The channels dir might not exist if the server hasn't run yet. Missing file
   = not configured, not an error.
 - The server reads `.env` once at boot. Token and thread channel changes need
-  a session restart or `/reload-plugins`. Say so after saving.
+  a session restart. Say so after saving.
 - `access.json` is re-read on every inbound message — policy changes via
   `/discord-threads:access` take effect immediately, no restart.
 - The bot needs **Create Private Threads** permission in the target channel.

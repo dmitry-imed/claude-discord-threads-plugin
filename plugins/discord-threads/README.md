@@ -51,7 +51,11 @@ Install the plugin:
 /plugin install discord-threads@axiumfoundry-plugins
 ```
 
-**5. Give the server the token.**
+**5. Restart Claude Code.**
+
+Exit and start a new `claude` session. The skill commands (`/discord-threads:configure`, `/discord-threads:access`) won't be available until you restart.
+
+**6. Give the server the token.**
 
 ```
 /discord:configure MTIz...
@@ -61,7 +65,7 @@ Writes `DISCORD_BOT_TOKEN=...` to `~/.claude/channels/discord/.env`. You can als
 
 > To run multiple bots on one machine (different tokens, separate allowlists), point `DISCORD_STATE_DIR` at a different directory per instance.
 
-**6. Relaunch with the channel flag.**
+**7. Relaunch with the channel flag.**
 
 The server won't connect without this — exit your session and start a new one:
 
@@ -69,7 +73,7 @@ The server won't connect without this — exit your session and start a new one:
 claude --channels plugin:discord-threads@axiumfoundry-plugins
 ```
 
-**7. Pair.**
+**8. Pair.**
 
 With Claude Code running from the previous step, DM your bot on Discord — it replies with a pairing code. If the bot doesn't respond, make sure your session is running with `--channels`. In your Claude Code session:
 
@@ -79,7 +83,7 @@ With Claude Code running from the previous step, DM your bot on Discord — it r
 
 Your next DM reaches the assistant.
 
-**8. Auto-allow Discord tools (recommended).**
+**9. Auto-allow Discord tools (recommended).**
 
 By default, every Discord reply/react/edit triggers a permission prompt. To auto-approve all Discord tools, add this to `~/.claude/settings.json`:
 
@@ -99,7 +103,7 @@ By default, every Discord reply/react/edit triggers a permission prompt. To auto
 
 Or merge with your existing permissions if you already have an `allow` array.
 
-**9. Lock it down.**
+**10. Lock it down.**
 
 Pairing is for capturing IDs. Once you're in, switch to `allowlist` so strangers don't get pairing-code replies. Ask Claude to do it, or `/discord-threads:access policy allowlist` directly.
 
