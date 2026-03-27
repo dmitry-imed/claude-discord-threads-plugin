@@ -150,16 +150,9 @@ const qAttachments = db.query<AttRow, [number]>(`
 `)
 
 // Your own addresses, from message.account ("E:you@icloud.com" / "p:+1555...")
-// on rows you sent. This is the identity you sent *from*. If your Apple ID is
-// reachable at an address you've never sent from, it won't appear here — send
-// one message from that identity to register it.
-//
-// DO NOT use chat.last_addressed_handle. Despite its docstring ("which of your
-// addresses reaches this person"), on machines with SMS history it returns a
-// polluted mix of short codes, business handles, and other contacts' numbers.
-// See anthropics/claude-plugins-official#1010: one user's last_addressed_handle
-// query returned 50 addresses, only 2 of which were actually theirs, and the
-// permission-relay handler spammed 148 DM chats.
+// on rows you sent. Don't supplement with chat.last_addressed_handle — on
+// machines with SMS history that column is polluted with short codes and
+// other people's numbers, not just your own identities.
 const SELF = new Set<string>()
 {
   type R = { addr: string }
@@ -419,10 +412,10 @@ const echo = new Map<string, number>()
 
 function echoKey(raw: string): string {
   return raw
-    .replace(/\s*Sent by Claude\s*$/, '')     // strip signature before \s collapse eats the \n
-    .replace(/[\u200d\ufe00-\ufe0f]/g, '')    // ZWJ + emoji variation selectors (chat.db adds/drops these)
-    .replace(/[\u2018\u2019]/g, "'")          // smart → straight single quote
-    .replace(/[\u201c\u201d]/g, '"')          // smart → straight double quote
+    .replace(/\s*Sent by Claude\s*$/, '')
+    .replace(/[\u200d\ufe00-\ufe0f]/g, '')    // ZWJ + variation selectors — chat.db is inconsistent about these
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
     .trim()
     .replace(/\s+/g, ' ')
     .slice(0, 120)
@@ -526,13 +519,9 @@ const mcp = new Server(
   },
 )
 
-// Receive permission_request from CC → format → send to the owner's self-chat.
-//
-// Self-chat ONLY. Not allowFrom, not groups. A permission reply grants tool
-// execution on the owner's machine — that authority belongs to the owner
-// alone. Allowlisted contacts can chat with Claude but must not be able to
-// approve Bash commands on someone else's laptop.
-// See anthropics/claude-plugins-official#1048, #1010.
+// Permission prompts go to self-chat only. A "yes" grants tool execution on
+// this machine — that authority is the owner's alone, not allowlisted
+// contacts'.
 mcp.setNotificationHandler(
   z.object({
     method: z.literal('notifications/claude/channel/permission_request'),
@@ -732,9 +721,8 @@ function handleInbound(r: Row): void {
 
   const text = messageText(r)
   const hasAttachments = r.cache_has_attachments === 1
-  // Tapbacks, read receipts, and other sync noise from linked devices land
-  // as rows with whitespace-only text or bare attachment flags. trim() so
-  // they don't trigger unsolicited replies. See #1041.
+  // trim() catches tapbacks/receipts synced from other devices — those land
+  // as whitespace-only rows.
   if (!text.trim() && !hasAttachments) return
 
   // Never deliver our own sends. In self-chat the is_from_me=1 rows are empty
@@ -771,11 +759,8 @@ function handleInbound(r: Row): void {
     }
   }
 
-  // Permission-reply intercept: if this looks like "yes xxxxx" for a
-  // pending permission request, emit the structured event instead of
-  // relaying as chat. Self-chat ONLY — mirrors the self-chat-only send
-  // side above. Allowlisted contacts can chat but cannot approve tool
-  // execution on the owner's machine.
+  // Permission replies: emit the structured event instead of relaying as
+  // chat. Owner-only — same gate as the send side.
   const permMatch = isSelfChat ? PERMISSION_REPLY_RE.exec(text) : null
   if (permMatch) {
     void mcp.notification({
