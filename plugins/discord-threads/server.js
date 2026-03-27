@@ -235,10 +235,12 @@ function isThread(ch) {
 
 // ─── MCP Protocol (JSON-RPC over stdio) ──────────────────────────────────────
 
+// MCP transport: newline-delimited JSON on stdin/stdout.
+// Claude Code sends bare JSON (one object per line), not Content-Length framed.
+
 function mcpWrite(msg) {
   const json = JSON.stringify(msg)
-  const header = `Content-Length: ${Buffer.byteLength(json)}\r\n\r\n`
-  process.stdout.write(header + json)
+  process.stdout.write(json + '\n')
 }
 
 function mcpNotify(method, params) {
@@ -248,25 +250,28 @@ function mcpNotify(method, params) {
 let stdinBuf = ''
 
 function processStdinBuffer() {
-  while (true) {
-    const headerEnd = stdinBuf.indexOf('\r\n\r\n')
-    if (headerEnd === -1) break
-    const header = stdinBuf.slice(0, headerEnd)
-    const m = header.match(/Content-Length:\s*(\d+)/i)
-    if (!m) {
-      stdinBuf = stdinBuf.slice(headerEnd + 4)
-      continue
-    }
-    const len = parseInt(m[1], 10)
-    const bodyStart = headerEnd + 4
-    if (stdinBuf.length < bodyStart + len) break
-    const body = stdinBuf.slice(bodyStart, bodyStart + len)
-    stdinBuf = stdinBuf.slice(bodyStart + len)
+  // Handle newline-delimited JSON messages.
+  let nl
+  while ((nl = stdinBuf.indexOf('\n')) !== -1) {
+    const line = stdinBuf.slice(0, nl).trim()
+    stdinBuf = stdinBuf.slice(nl + 1)
+    if (!line) continue
     try {
-      const msg = JSON.parse(body)
+      const msg = JSON.parse(line)
       handleMcpRequest(msg)
     } catch (err) {
       process.stderr.write(`discord channel: malformed MCP message: ${err}\n`)
+    }
+  }
+  // If buffer has no newline yet but looks like complete JSON, try parsing it.
+  // Handles case where last message has no trailing newline.
+  if (stdinBuf.trim()) {
+    try {
+      const msg = JSON.parse(stdinBuf.trim())
+      stdinBuf = ''
+      handleMcpRequest(msg)
+    } catch {
+      // Incomplete — wait for more data.
     }
   }
 }
