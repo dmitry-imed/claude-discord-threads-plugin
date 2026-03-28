@@ -1091,6 +1091,7 @@ function handleDispatch(event, data) {
 
 async function onReady() {
   if (!THREAD_PARENT_CHANNEL_ID || !SESSION_NAME) return
+  if (sessionThreadId) return // already created — reconnect, not first connect
 
   try {
     const parent = await fetchChannel(THREAD_PARENT_CHANNEL_ID)
