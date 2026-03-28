@@ -84,7 +84,9 @@ function detectProjectDir() {
           if (cwdMatch) cwd = cwdMatch[1]
         } catch {}
       }
-      if (cwd && cwd.startsWith('/') && cwd !== pluginDir) return cwd
+      if (cwd && cwd.startsWith('/') && cwd !== pluginDir) {
+        try { if (statSync(cwd).isDirectory()) return cwd } catch {}
+      }
       const psOut = execSync(`ps -o ppid= -p ${pid}`, {
         encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 3000,
       })
